@@ -1,0 +1,69 @@
+{
+  "dxt_version": "0.1",
+  "name": "xero-mcp-server",
+  "display_name": "Xero",
+  "version": "0.2.0",
+  "description": "Create invoices, bills, payments, and bank transactions in Xero. Attach PDFs to bills. Flag bill lines as billable expenses and re-invoice them to clients.",
+  "long_description": "An MCP server that drives the Xero accounting API using a Xero Custom Connection. Exposes tools for creating and managing sales invoices (ACCREC) and supplier bills (ACCPAY), recording payments, spend/receive-money bank transactions, contacts, accounts, and tax rates. v0.2 adds: attaching files (PDFs/images) to bills and invoices, and a billable-expense workflow — flag lines on supplier bills as billable to a client and later generate a sales invoice for the client from all their pending billable expenses (local JSON store, since Xero's native 'Assign to customer' isn't in the public API).",
+  "author": {
+    "name": "Damian Guppy"
+  },
+  "server": {
+    "type": "node",
+    "entry_point": "dist/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/dist/index.js"],
+      "env": {
+        "XERO_CLIENT_ID": "${user_config.xero_client_id}",
+        "XERO_CLIENT_SECRET": "${user_config.xero_client_secret}"
+      }
+    }
+  },
+  "tools": [
+    { "name": "xero_get_organisation", "description": "Fetch organisation details (name, base currency, timezone, FY end)" },
+    { "name": "xero_list_accounts", "description": "List chart of accounts; filter by type (BANK, REVENUE, EXPENSE, …)" },
+    { "name": "xero_list_tax_rates", "description": "List tax rates available on this organisation" },
+    { "name": "xero_search_contacts", "description": "Search customers and suppliers" },
+    { "name": "xero_create_contact", "description": "Create a new contact" },
+    { "name": "xero_list_invoices", "description": "List sales invoices (ACCREC)" },
+    { "name": "xero_get_invoice", "description": "Fetch one invoice by UUID or number" },
+    { "name": "xero_create_invoice", "description": "Create a sales invoice (defaults to DRAFT)" },
+    { "name": "xero_update_invoice", "description": "Approve, void, or edit an invoice" },
+    { "name": "xero_list_bills", "description": "List supplier bills (ACCPAY)" },
+    { "name": "xero_create_bill", "description": "Create a supplier bill (defaults to DRAFT)" },
+    { "name": "xero_create_payment", "description": "Apply a payment to an invoice or bill" },
+    { "name": "xero_list_payments", "description": "List payments" },
+    { "name": "xero_list_bank_transactions", "description": "List spend/receive-money bank transactions" },
+    { "name": "xero_create_bank_transaction", "description": "Create a spend or receive money transaction" },
+    { "name": "xero_mark_bank_transaction_reconciled", "description": "Flip is_reconciled on a bank transaction" },
+    { "name": "xero_attach_file_to_invoice_or_bill", "description": "Attach a local PDF/image/etc. to an invoice or bill" },
+    { "name": "xero_list_invoice_attachments", "description": "List files attached to an invoice or bill" },
+    { "name": "xero_flag_bill_line_as_billable", "description": "Flag a bill line as a billable client expense (local store)" },
+    { "name": "xero_list_billable_expenses", "description": "List pending or billed client expenses" },
+    { "name": "xero_generate_invoice_from_billable_expenses", "description": "Create a sales invoice rolling up a client's pending billable expenses" },
+    { "name": "xero_unflag_billable_expense", "description": "Delete or revert a billable expense record" }
+  ],
+  "user_config": {
+    "xero_client_id": {
+      "type": "string",
+      "title": "Xero Client ID",
+      "description": "Client ID from your Xero Custom Connection (developer.xero.com/app/manage)",
+      "required": true,
+      "sensitive": false
+    },
+    "xero_client_secret": {
+      "type": "string",
+      "title": "Xero Client Secret",
+      "description": "Client secret from your Xero Custom Connection — shown once when generated",
+      "required": true,
+      "sensitive": true
+    }
+  },
+  "compatibility": {
+    "platforms": ["darwin", "linux", "win32"],
+    "runtimes": {
+      "node": ">=18"
+    }
+  }
+}
