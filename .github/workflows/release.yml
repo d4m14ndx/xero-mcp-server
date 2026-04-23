@@ -1,0 +1,87 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g. v0.2.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies (production only, for DXT)
+        run: npm ci --omit=dev
+
+      - name: Install dev deps (needed to build)
+        run: npm install --no-save typescript @types/node tsx
+
+      - name: Build TypeScript
+        run: npm run build
+
+      - name: Resolve version
+        id: version
+        run: |
+          if [ -n "${{ github.event.inputs.tag }}" ]; then
+            echo "tag=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Verify manifest and package versions match tag
+        run: |
+          TAG_VERSION="${{ steps.version.outputs.tag }}"
+          TAG_VERSION="${TAG_VERSION#v}"
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          MFST_VERSION=$(node -p "require('./manifest.json').version")
+          echo "tag=$TAG_VERSION pkg=$PKG_VERSION mfst=$MFST_VERSION"
+          if [ "$PKG_VERSION" != "$TAG_VERSION" ] || [ "$MFST_VERSION" != "$TAG_VERSION" ]; then
+            echo "::error::Version mismatch — tag '$TAG_VERSION' != package.json '$PKG_VERSION' or manifest.json '$MFST_VERSION'"
+            exit 1
+          fi
+
+      - name: Package DXT
+        run: |
+          zip -qr xero-mcp-server.dxt \
+            manifest.json dist package.json node_modules \
+            -x "node_modules/.cache/*" "node_modules/.package-lock.json"
+          ls -lh xero-mcp-server.dxt
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: ${{ steps.version.outputs.tag }}
+          generate_release_notes: true
+          files: xero-mcp-server.dxt
+          body: |
+            ## Install
+
+            **Claude Desktop (one-click)** — download `xero-mcp-server.dxt` below and double-click. Claude will prompt for your Xero Client ID and Secret.
+
+            **From source**:
+            ```bash
+            git clone https://github.com/d4m14ndx/xero-mcp-server.git
+            cd xero-mcp-server
+            git checkout ${{ steps.version.outputs.tag }}
+            npm install && npm run build
+            ```
+
+            See the [README](https://github.com/d4m14ndx/xero-mcp-server#quickstart) for full setup and the [CHANGELOG](https://github.com/d4m14ndx/xero-mcp-server/blob/main/CHANGELOG.md) for what's new.
