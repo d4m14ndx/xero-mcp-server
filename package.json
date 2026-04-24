@@ -27,7 +27,7 @@
     "inspector": "npx @modelcontextprotocol/inspector node dist/index.js"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.6.1",

@@ -73,7 +73,7 @@ Vitest-based suite — run `npm test` from the repo root. `npm run test:watch` r
 
 ### CI
 
-GitHub Actions runs `npm run build && npm test` against Node 18, 20, and 22 on every push and PR — see `.github/workflows/ci.yml`. Keep the test run fast (currently <1s total).
+GitHub Actions runs `npm run build && npm test` against Node 20, 22, and 24 on every push and PR — see `.github/workflows/ci.yml`. Keep the test run fast (currently <1s total).
 
 ## Releasing
 

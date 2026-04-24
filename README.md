@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 [![MCP](https://img.shields.io/badge/MCP-compatible-brightgreen)](https://modelcontextprotocol.io/)
 [![Claude Desktop](https://img.shields.io/badge/Claude%20Desktop-DXT-orange)](https://github.com/anthropics/dxt)
-[![Node](https://img.shields.io/badge/Node-%E2%89%A518-green)](https://nodejs.org/)
+[![Node](https://img.shields.io/badge/Node-%E2%89%A520-green)](https://nodejs.org/)
 
 **Drive your Xero accounting from Claude.** An MCP (Model Context Protocol) server exposing 26 Xero tools — create invoices and bills, record payments, attach PDFs, reconcile bank transactions, flag billable client expenses, roll them up into invoices later, and (for bookkeepers) switch between multiple client orgs under one OAuth consent.
 
@@ -446,7 +446,7 @@ npm run test:coverage  # generate coverage report
 
 Powered by [Vitest](https://vitest.dev/). The suite covers pure helpers (`common.ts`), client state and auth-mode detection (`client.ts`), OAuth redirect parsing and token persistence (`oauth.ts`), tool registration completeness, and the help + tenant tool handlers (no credentials required).
 
-CI runs on every push and PR against Node 18 / 20 / 22 — see [.github/workflows/ci.yml](./.github/workflows/ci.yml).
+CI runs on every push and PR against Node 20 / 22 / 24 — see [.github/workflows/ci.yml](./.github/workflows/ci.yml).
 
 Tests that exercise the live Xero API (beyond mocks) go through `scripts/smoke-test.mjs` — gated by `XERO_CLIENT_ID` / `XERO_CLIENT_SECRET` env and not part of the automated CI run.
 
