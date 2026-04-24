@@ -1,5 +1,6 @@
 # xero-mcp-server
 
+[![CI](https://github.com/d4m14ndx/xero-mcp-server/actions/workflows/ci.yml/badge.svg)](https://github.com/d4m14ndx/xero-mcp-server/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 [![MCP](https://img.shields.io/badge/MCP-compatible-brightgreen)](https://modelcontextprotocol.io/)
 [![Claude Desktop](https://img.shields.io/badge/Claude%20Desktop-DXT-orange)](https://github.com/anthropics/dxt)
@@ -432,11 +433,22 @@ Override the default scope list with the `XERO_SCOPES="space separated list"` en
 ## Development
 
 ```bash
-npm run dev        # tsx watch mode
-npm run build      # compile to dist/
-npm run auth       # one-time OAuth setup (reads XERO_CLIENT_ID/SECRET)
-npm run inspector  # test tools via MCP Inspector
+npm run dev            # tsx watch mode
+npm run build          # compile to dist/
+npm run auth           # one-time OAuth setup (reads XERO_CLIENT_ID/SECRET)
+npm run inspector      # test tools via MCP Inspector
+npm test               # run the test suite once
+npm run test:watch     # watch mode for tests
+npm run test:coverage  # generate coverage report
 ```
+
+### Tests
+
+Powered by [Vitest](https://vitest.dev/). The suite covers pure helpers (`common.ts`), client state and auth-mode detection (`client.ts`), OAuth redirect parsing and token persistence (`oauth.ts`), tool registration completeness, and the help + tenant tool handlers (no credentials required).
+
+CI runs on every push and PR against Node 18 / 20 / 22 — see [.github/workflows/ci.yml](./.github/workflows/ci.yml).
+
+Tests that exercise the live Xero API (beyond mocks) go through `scripts/smoke-test.mjs` — gated by `XERO_CLIENT_ID` / `XERO_CLIENT_SECRET` env and not part of the automated CI run.
 
 ### Layout
 

@@ -2,7 +2,7 @@
   "dxt_version": "0.1",
   "name": "xero-mcp-server",
   "display_name": "Xero",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Drive Xero from Claude: invoices, bills, payments, bank transactions, PDF attachments, billable expenses. Multi-tenant (bookkeepers), with Custom Connection (paid) or standard OAuth 2.0 (free) auth.",
   "long_description": "An MCP server that drives the Xero accounting API. Two auth modes: Xero Custom Connection (paid dev plan, single-tenant, no browser) or standard OAuth 2.0 (free plan, browser consent once, refresh-token persisted, multi-tenant). Bookkeepers can switch between client orgs at will using xero_list_tenants / xero_set_current_tenant. Tools cover: sales invoices (ACCREC), supplier bills (ACCPAY), payments, spend/receive-money bank transactions, contacts, chart of accounts, tax rates, PDF/image attachments, and a billable-expense workflow (flag bill lines as billable to a client, later generate a sales invoice from all their pending billable expenses). Includes a built-in xero_get_setup_help tool that works even without credentials.",
   "author": {

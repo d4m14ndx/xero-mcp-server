@@ -13,7 +13,7 @@ import { registerTenantTools } from "./tools/tenants.js";
 
 const server = new McpServer({
   name: "xero-mcp-server",
-  version: "0.4.0",
+  version: "0.5.0",
 });
 
 // Help + tenant tools register first so they're discoverable even when the

@@ -55,11 +55,25 @@ One file per Xero domain. To add a new tool:
 
 ## Testing
 
-There's currently no formal test suite. Contributions that add one are welcome. For now:
+Vitest-based suite — run `npm test` from the repo root. `npm run test:watch` re-runs on file changes, `npm run test:coverage` generates an HTML + lcov report.
 
-- `npm run build` must succeed without errors or warnings.
-- `npm run inspector` must start and list every tool.
-- `node scripts/smoke-test.mjs` should return your org name and bank accounts (requires env vars).
+### Categories
+
+- **Pure helpers** (`test/common.test.ts`) — `compact`, `formatMoney`, `formatError`, `jsonResult`, `markdownResult`, Zod schema behaviour.
+- **Client state** (`test/client.test.ts`) — `getAuthMode`, `hasCredentials`, `tenantId()` override logic, `XeroSetupRequiredError`. Tests dynamic-import the module and restore env between cases.
+- **OAuth helpers** (`test/oauth.test.ts`) — `parseRedirectUri`, token-file round-trip, file permissions. Backs up and restores any real `~/.xero-mcp/oauth-tokens.json` on your machine during the run.
+- **Tool registration** (`test/tools-register.test.ts`) — every tool has `title`, `description`, `annotations`; names are snake_case + prefixed; no duplicates; total count matches the README.
+- **Help + tenant handlers** (`test/help-tool.test.ts`, `test/tenant-tools.test.ts`) — verify setup help works without credentials and tenant tools fail gracefully in custom_connection mode.
+
+### Adding a test
+
+- One `describe` block per function or behaviour area.
+- If the test touches `process.env`, save and restore the relevant keys in `beforeEach` / `afterEach`.
+- If the test needs Xero, mock the SDK — don't hit the live API from CI. The `scripts/smoke-test.mjs` script is the escape hatch for live checks (env-gated, run manually).
+
+### CI
+
+GitHub Actions runs `npm run build && npm test` against Node 18, 20, and 22 on every push and PR — see `.github/workflows/ci.yml`. Keep the test run fast (currently <1s total).
 
 ## Releasing
 

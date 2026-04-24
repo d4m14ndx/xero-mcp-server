@@ -2,6 +2,18 @@
 
 All notable changes to this project are documented here. Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); this project uses [Semantic Versioning](https://semver.org/).
 
+## [0.5.0] — 2026-04-24
+
+### Added
+- **Vitest test suite** — 64 tests across 6 files. Covers pure helpers, client state, OAuth redirect parsing + token persistence round-trip, tool registration completeness, and handler behaviour for help + tenant tools.
+- `npm test`, `npm run test:watch`, `npm run test:coverage` scripts.
+- **CI workflow** (`.github/workflows/ci.yml`) — builds and runs tests against Node 18, 20, and 22 on every push and PR.
+- CI badge at the top of the README.
+
+### Changed
+- `scripts/smoke-test.mjs` updated to use the new `tenantId()` export.
+- `CONTRIBUTING.md` expanded with test categories, how to add a test, and CI notes.
+
 ## [0.4.0] — 2026-04-24
 
 ### Added
@@ -56,6 +68,7 @@ All notable changes to this project are documented here. Format based on [Keep a
 - Xero Custom Connection (OAuth2 `client_credentials`) auth with in-memory token caching and auto-refresh.
 - Built on official `xero-node` SDK.
 
+[0.5.0]: https://github.com/d4m14ndx/xero-mcp-server/releases/tag/v0.5.0
 [0.4.0]: https://github.com/d4m14ndx/xero-mcp-server/releases/tag/v0.4.0
 [0.3.0]: https://github.com/d4m14ndx/xero-mcp-server/releases/tag/v0.3.0
 [0.2.0]: https://github.com/d4m14ndx/xero-mcp-server/releases/tag/v0.2.0
