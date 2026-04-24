@@ -2,6 +2,21 @@
 
 All notable changes to this project are documented here. Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); this project uses [Semantic Versioning](https://semver.org/).
 
+## [0.4.0] — 2026-04-24
+
+### Added
+- **`xero_get_setup_help` tool** — always-available guide that walks the user through both setup paths (free OAuth 2.0 / paid Custom Connection). Works even when the server has no credentials configured, so first-time users can ask Claude "how do I set up Xero?" and get a complete answer.
+- **Multi-tenant support for bookkeepers**:
+  - `xero_list_tenants` — enumerate every Xero org authorised under the current OAuth consent.
+  - `xero_get_current_tenant` — report which org is active plus auth mode.
+  - `xero_set_current_tenant` — switch the active org. Persists to disk; survives restart.
+- Server now **starts without credentials** — previously it exited immediately. The help tool and tenant tools remain callable; other tools return an actionable error pointing at `xero_get_setup_help`.
+
+### Changed
+- `tenantId()` in `src/client.ts` now accepts an optional override. Common schema fragment `TenantOverrideSchema` added to `common.ts` for future per-call tenant targeting on individual tools.
+- `formatError` recognises `XeroSetupRequiredError` and adds a pointer to `xero_get_setup_help`.
+- DXT manifest advertises the 4 new tools.
+
 ## [0.3.0] — 2026-04-24
 
 ### Added
@@ -41,6 +56,7 @@ All notable changes to this project are documented here. Format based on [Keep a
 - Xero Custom Connection (OAuth2 `client_credentials`) auth with in-memory token caching and auto-refresh.
 - Built on official `xero-node` SDK.
 
+[0.4.0]: https://github.com/d4m14ndx/xero-mcp-server/releases/tag/v0.4.0
 [0.3.0]: https://github.com/d4m14ndx/xero-mcp-server/releases/tag/v0.3.0
 [0.2.0]: https://github.com/d4m14ndx/xero-mcp-server/releases/tag/v0.2.0
 [0.1.0]: https://github.com/d4m14ndx/xero-mcp-server/releases/tag/v0.1.0

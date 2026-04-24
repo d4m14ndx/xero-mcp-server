@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 // Quick smoke test: mints a token and fetches the organisation.
-import { getXeroClient, TENANT_ID } from "../dist/client.js";
+import { getXeroClient, tenantId } from "../dist/client.js";
 
 async function main() {
   console.log("Minting token…");
   const client = await getXeroClient();
   console.log("Fetching organisation…");
-  const res = await client.accountingApi.getOrganisations(TENANT_ID);
+  const res = await client.accountingApi.getOrganisations(tenantId());
   const org = res.body.organisations?.[0];
   if (!org) {
     console.error("No organisation returned");
@@ -21,7 +21,7 @@ async function main() {
 
   console.log("\nFetching 3 bank accounts…");
   const acc = await client.accountingApi.getAccounts(
-    TENANT_ID,
+    tenantId(),
     undefined,
     'Type=="BANK"',
   );

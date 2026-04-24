@@ -8,11 +8,18 @@ import { registerContactTools } from "./tools/contacts.js";
 import { registerReferenceTools } from "./tools/reference.js";
 import { registerAttachmentTools } from "./tools/attachments.js";
 import { registerBillableTools } from "./tools/billable.js";
+import { registerHelpTools } from "./tools/help.js";
+import { registerTenantTools } from "./tools/tenants.js";
 
 const server = new McpServer({
   name: "xero-mcp-server",
-  version: "0.3.0",
+  version: "0.4.0",
 });
+
+// Help + tenant tools register first so they're discoverable even when the
+// server starts without credentials.
+registerHelpTools(server);
+registerTenantTools(server);
 
 registerInvoiceTools(server);
 registerPaymentTools(server);
@@ -23,15 +30,14 @@ registerAttachmentTools(server);
 registerBillableTools(server);
 
 async function main() {
-  if (!process.env.XERO_CLIENT_ID || !process.env.XERO_CLIENT_SECRET) {
-    console.error(
-      "ERROR: XERO_CLIENT_ID and XERO_CLIENT_SECRET must be set. See README for setup.",
-    );
-    process.exit(1);
-  }
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("xero-mcp-server running on stdio");
+  const hasCreds = !!(
+    process.env.XERO_CLIENT_ID && process.env.XERO_CLIENT_SECRET
+  );
+  console.error(
+    `xero-mcp-server running on stdio. Credentials ${hasCreds ? "present" : "NOT configured — call xero_get_setup_help for instructions"}.`,
+  );
 }
 
 main().catch((err) => {

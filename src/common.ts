@@ -1,9 +1,24 @@
 import { z } from "zod";
+import { XeroSetupRequiredError } from "./client.js";
 
 export enum ResponseFormat {
   MARKDOWN = "markdown",
   JSON = "json",
 }
+
+/**
+ * Shared schema fragment: every Xero tool accepts an optional tenant_id
+ * override. Spread with `...TenantOverrideSchema` into a tool's inputSchema.
+ */
+export const TenantOverrideSchema = {
+  tenant_id: z
+    .string()
+    .uuid()
+    .optional()
+    .describe(
+      "OAuth-mode only: override the active tenant for this call (UUID from xero_list_tenants). Leave unset to use the currently-selected tenant (see xero_get_current_tenant). Ignored in custom_connection mode.",
+    ),
+};
 
 export const ResponseFormatSchema = z
   .nativeEnum(ResponseFormat)
@@ -126,6 +141,10 @@ export function formatError(err: unknown): {
   isError: true;
 } {
   let message: string;
+  if (err instanceof XeroSetupRequiredError) {
+    message = `${err.message}\n\nRun \`xero_get_setup_help\` for step-by-step setup instructions.`;
+    return { content: [{ type: "text", text: message }], isError: true };
+  }
   if (err && typeof err === "object" && "response" in err) {
     const anyErr = err as {
       response?: { statusCode?: number; body?: unknown };
