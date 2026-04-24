@@ -10,15 +10,17 @@ import { registerAttachmentTools } from "./tools/attachments.js";
 import { registerBillableTools } from "./tools/billable.js";
 import { registerHelpTools } from "./tools/help.js";
 import { registerTenantTools } from "./tools/tenants.js";
+import { registerUpdateTools } from "./tools/updates.js";
 
 const server = new McpServer({
   name: "xero-mcp-server",
-  version: "0.5.0",
+  version: "0.6.0",
 });
 
-// Help + tenant tools register first so they're discoverable even when the
-// server starts without credentials.
+// Help, version check, and tenant tools register first so they're discoverable
+// even when the server starts without credentials.
 registerHelpTools(server);
+registerUpdateTools(server);
 registerTenantTools(server);
 
 registerInvoiceTools(server);

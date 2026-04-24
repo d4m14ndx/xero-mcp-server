@@ -2,6 +2,18 @@
 
 All notable changes to this project are documented here. Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); this project uses [Semantic Versioning](https://semver.org/).
 
+## [0.6.0] — 2026-04-24
+
+### Added
+- **`xero_authorize_new_tenant`** — trigger the Xero OAuth consent flow from inside Claude to add new client orgs. No more manually deleting `~/.xero-mcp/oauth-tokens.json`. The tool reports which tenants were added, which were removed, and the full current list after the consent completes.
+- **`xero_check_for_updates`** — hits the GitHub releases API, compares with the installed version, returns release notes + download link. Result cached in `~/.xero-mcp/update-check.json` for 6 hours to avoid hammering GitHub; pass `force=true` to bypass.
+- **`xero_version`** — report the installed version. Small but handy during debugging.
+- Polished the `xero_set_current_tenant` description so natural phrasings ("switch to Acme", "I want to work on <client>'s books") reliably land on it.
+
+### Changed
+- `reauthorizeOAuth()` helper in `src/client.ts` — resets all cached state and re-runs the OAuth consent flow. Used by `xero_authorize_new_tenant`.
+- Tool count: 29.
+
 ## [0.5.0] — 2026-04-24
 
 ### Added
@@ -68,6 +80,7 @@ All notable changes to this project are documented here. Format based on [Keep a
 - Xero Custom Connection (OAuth2 `client_credentials`) auth with in-memory token caching and auto-refresh.
 - Built on official `xero-node` SDK.
 
+[0.6.0]: https://github.com/d4m14ndx/xero-mcp-server/releases/tag/v0.6.0
 [0.5.0]: https://github.com/d4m14ndx/xero-mcp-server/releases/tag/v0.5.0
 [0.4.0]: https://github.com/d4m14ndx/xero-mcp-server/releases/tag/v0.4.0
 [0.3.0]: https://github.com/d4m14ndx/xero-mcp-server/releases/tag/v0.3.0

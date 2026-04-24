@@ -211,6 +211,49 @@ export function currentTenantInfo(): TenantInfo | null {
 }
 
 /**
+ * Force the OAuth consent flow to run again. Replaces the stored token set
+ * with a fresh one covering whatever orgs the user ticks during consent — the
+ * natural way to add new Xero clients without deleting the config file.
+ *
+ * Returns the before/after tenant lists so the caller can show what's new.
+ */
+export async function reauthorizeOAuth(): Promise<{
+  added: TenantInfo[];
+  removed: TenantInfo[];
+  current: TenantInfo[];
+}> {
+  if (getAuthMode() !== "oauth") {
+    throw new Error(
+      "Reauthorise only works in OAuth mode. Custom Connections are single-tenant by design — to connect another org create a second Custom Connection (and a separate MCP install).",
+    );
+  }
+  const clientId = requireEnv("XERO_CLIENT_ID");
+  const clientSecret = requireEnv("XERO_CLIENT_SECRET");
+  const scopes = parseScopes("XERO_SCOPES", OAUTH_DEFAULT_SCOPES);
+  const preferredTenantId = process.env.XERO_TENANT_ID || undefined;
+
+  const before = [...cachedTenants];
+  await runOAuthFlow({ clientId, clientSecret, scopes, preferredTenantId });
+
+  // Reset and reload so the new tokens are picked up
+  clientPromise = null;
+  cachedToken = null;
+  tokenExpiresAt = 0;
+  cachedTenants = [];
+  resolvedTenantId = "";
+  await getXeroClient();
+  const after = await refreshTenantList();
+
+  const beforeIds = new Set(before.map((t) => t.tenant_id));
+  const afterIds = new Set(after.map((t) => t.tenant_id));
+  return {
+    added: after.filter((t) => !beforeIds.has(t.tenant_id)),
+    removed: before.filter((t) => !afterIds.has(t.tenant_id)),
+    current: after,
+  };
+}
+
+/**
  * Refresh the list of tenants authorised under the current OAuth token. No-op
  * for Custom Connection (single-tenant by design). Returns the cached list.
  */

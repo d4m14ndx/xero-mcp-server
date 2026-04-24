@@ -9,6 +9,7 @@ import { registerAttachmentTools } from "../src/tools/attachments.js";
 import { registerBillableTools } from "../src/tools/billable.js";
 import { registerHelpTools } from "../src/tools/help.js";
 import { registerTenantTools } from "../src/tools/tenants.js";
+import { registerUpdateTools } from "../src/tools/updates.js";
 
 interface RegisteredInfo {
   name: string;
@@ -39,6 +40,7 @@ describe("tool registration", () => {
     const server = new McpServer({ name: "test", version: "0.0.0" });
     const registered = spyOnRegisterTool(server);
     registerHelpTools(server);
+    registerUpdateTools(server);
     registerTenantTools(server);
     registerReferenceTools(server);
     registerContactTools(server);
@@ -48,15 +50,16 @@ describe("tool registration", () => {
     registerAttachmentTools(server);
     registerBillableTools(server);
 
-    // 1 help + 3 tenant + 3 reference + 2 contact + 6 invoices/bills + 2 payments
-    // + 3 bank + 2 attachments + 4 billable = 26
-    expect(registered).toHaveLength(26);
+    // 1 help + 2 updates + 4 tenant + 3 reference + 2 contact + 6 invoices/bills
+    // + 2 payments + 3 bank + 2 attachments + 4 billable = 29
+    expect(registered).toHaveLength(29);
   });
 
   it("every tool follows the MCP quality checklist", () => {
     const server = new McpServer({ name: "test", version: "0.0.0" });
     const registered = spyOnRegisterTool(server);
     registerHelpTools(server);
+    registerUpdateTools(server);
     registerTenantTools(server);
     registerReferenceTools(server);
     registerContactTools(server);
@@ -81,6 +84,7 @@ describe("tool registration", () => {
     const server = new McpServer({ name: "test", version: "0.0.0" });
     const registered = spyOnRegisterTool(server);
     registerHelpTools(server);
+    registerUpdateTools(server);
     registerTenantTools(server);
     registerReferenceTools(server);
     registerContactTools(server);
@@ -91,11 +95,14 @@ describe("tool registration", () => {
     registerBillableTools(server);
     const names = registered.map((r) => r.name);
 
-    // Setup + multi-tenant
+    // Setup + updates + multi-tenant
     expect(names).toContain("xero_get_setup_help");
+    expect(names).toContain("xero_check_for_updates");
+    expect(names).toContain("xero_version");
     expect(names).toContain("xero_list_tenants");
     expect(names).toContain("xero_get_current_tenant");
     expect(names).toContain("xero_set_current_tenant");
+    expect(names).toContain("xero_authorize_new_tenant");
 
     // Core Xero ops
     expect(names).toContain("xero_create_invoice");
@@ -113,6 +120,7 @@ describe("tool registration", () => {
     const server = new McpServer({ name: "test", version: "0.0.0" });
     const registered = spyOnRegisterTool(server);
     registerHelpTools(server);
+    registerUpdateTools(server);
     registerTenantTools(server);
     registerReferenceTools(server);
     registerContactTools(server);

@@ -6,7 +6,7 @@
 [![Claude Desktop](https://img.shields.io/badge/Claude%20Desktop-DXT-orange)](https://github.com/anthropics/dxt)
 [![Node](https://img.shields.io/badge/Node-%E2%89%A520-green)](https://nodejs.org/)
 
-**Drive your Xero accounting from Claude.** An MCP (Model Context Protocol) server exposing 26 Xero tools — create invoices and bills, record payments, attach PDFs, reconcile bank transactions, flag billable client expenses, roll them up into invoices later, and (for bookkeepers) switch between multiple client orgs under one OAuth consent.
+**Drive your Xero accounting from Claude.** An MCP (Model Context Protocol) server exposing 29 Xero tools — create invoices and bills, record payments, attach PDFs, reconcile bank transactions, flag billable client expenses, roll them up into invoices later, and (for bookkeepers) manage multiple client orgs under one OAuth consent.
 
 Built on the official [`xero-node`](https://github.com/XeroAPI/xero-node) SDK with two auth modes:
 
@@ -53,15 +53,18 @@ This server gives Claude every primitive needed for day-to-day AP/AR work withou
 
 ## Tool reference
 
-**26 tools in total.** Tools are grouped by domain below.
+**29 tools in total.** Tools are grouped by domain below.
 
-### Setup + multi-tenant
+### Setup + version + multi-tenant
 | Tool | What it does | Works without creds? |
 |---|---|---|
 | `xero_get_setup_help` | Step-by-step setup instructions (free OAuth 2.0 / paid Custom Connection) | ✓ |
+| `xero_version` | Show the installed server version | ✓ |
+| `xero_check_for_updates` | Check GitHub for a newer release (6 h cache) | ✓ |
 | `xero_list_tenants` | Every Xero org authorised under the current OAuth consent |  |
 | `xero_get_current_tenant` | Which org is active + auth mode |  |
-| `xero_set_current_tenant` | Switch active org (OAuth only; persists to disk) |  |
+| `xero_set_current_tenant` | Switch active org ("switch to Acme"). OAuth only; persists to disk. |  |
+| `xero_authorize_new_tenant` | Add new client orgs via browser consent without deleting the config file. OAuth only. |  |
 
 ### Reference data
 | Tool | What it does |
@@ -332,7 +335,9 @@ Tenants are persisted — if Claude Desktop restarts mid-session, the last-selec
 
 ### Adding more tenants later
 
-If you gain access to new Xero orgs after the initial consent, delete `~/.xero-mcp/oauth-tokens.json` and call any tool (or run `npm run auth`) to re-consent. The new orgs will appear in `xero_list_tenants` afterwards.
+Just ask Claude: _"add a new Xero client"_ or _"connect Globex's books"_ and it'll call `xero_authorize_new_tenant`. The server opens your browser to Xero's consent screen; tick the new org(s) (plus any existing ones you want to keep), submit, done — the tool reports which orgs were added, which were removed, and the full current list. No file deletion required.
+
+Under the hood this runs a fresh OAuth consent and replaces the stored tokens. The CLI equivalent is `rm ~/.xero-mcp/oauth-tokens.json && npm run auth`.
 
 ---
 
@@ -444,7 +449,7 @@ npm run test:coverage  # generate coverage report
 
 ### Tests
 
-Powered by [Vitest](https://vitest.dev/). The suite covers pure helpers (`common.ts`), client state and auth-mode detection (`client.ts`), OAuth redirect parsing and token persistence (`oauth.ts`), tool registration completeness, and the help + tenant tool handlers (no credentials required).
+Powered by [Vitest](https://vitest.dev/). The suite covers pure helpers (`common.ts`), client state and auth-mode detection (`client.ts`), OAuth redirect parsing and token persistence (`oauth.ts`), semver compare + GitHub release check with cache (`updates.ts`), tool registration completeness, and the help + tenant tool handlers (no credentials required). 79 tests, <1 s runtime.
 
 CI runs on every push and PR against Node 20 / 22 / 24 — see [.github/workflows/ci.yml](./.github/workflows/ci.yml).
 
@@ -454,13 +459,15 @@ Tests that exercise the live Xero API (beyond mocks) go through `scripts/smoke-t
 
 ```
 src/
-├── client.ts          # XeroClient wrapper, token cache, dual auth, tenant resolution
+├── client.ts          # XeroClient wrapper, token cache, dual auth, tenant state
 ├── oauth.ts           # OAuth authorization-code flow + token persistence
+├── updates.ts         # GitHub release check + 6h cache + semver compare
 ├── common.ts          # Shared Zod schemas, formatting, error helpers
 ├── index.ts           # MCP server entry point
 └── tools/
     ├── help.ts        # xero_get_setup_help (works without creds)
-    ├── tenants.ts     # List/get/set current tenant (multi-tenant)
+    ├── tenants.ts     # List/get/set/authorise tenants (multi-tenant)
+    ├── updates.ts     # xero_version, xero_check_for_updates
     ├── invoices.ts    # ACCREC + ACCPAY invoice/bill tools
     ├── payments.ts    # Payments against invoices/bills
     ├── bank.ts        # Spend/receive money + reconciliation flag
