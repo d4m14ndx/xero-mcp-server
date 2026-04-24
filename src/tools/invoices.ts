@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { Invoice } from "xero-node";
-import { getXeroClient, TENANT_ID } from "../client.js";
+import { getXeroClient, tenantId } from "../client.js";
 import {
   LineItemSchema,
   PaginationSchema,
@@ -206,7 +206,7 @@ Returns: { invoices: [...], page, count }.`,
         const baseWhere = 'Type=="ACCREC"';
         const where = params.where ? `${baseWhere} AND (${params.where})` : baseWhere;
         const res = await client.accountingApi.getInvoices(
-          TENANT_ID,
+          tenantId(),
           params.modified_since ? new Date(params.modified_since) : undefined,
           where,
           params.order,
@@ -260,7 +260,7 @@ Returns: { invoices: [...], page, count }.`,
       try {
         const client = await getXeroClient();
         const res = await client.accountingApi.getInvoice(
-          TENANT_ID,
+          tenantId(),
           invoice_id_or_number,
         );
         const invoice = res.body.invoices?.[0];
@@ -307,7 +307,7 @@ Returns the created invoice including its generated invoice_number and invoice_i
       try {
         const client = await getXeroClient();
         const payload = buildInvoicePayload("ACCREC", params);
-        const res = await client.accountingApi.createInvoices(TENANT_ID, {
+        const res = await client.accountingApi.createInvoices(tenantId(), {
           invoices: [payload],
         });
         const created = res.body.invoices?.[0];
@@ -354,7 +354,7 @@ Only fields you pass are changed; unsupplied fields remain untouched on the Xero
           reference,
           lineItems: line_items?.map(toXeroLineItem),
         }) as Invoice;
-        const res = await client.accountingApi.updateInvoice(TENANT_ID, invoice_id, {
+        const res = await client.accountingApi.updateInvoice(tenantId(), invoice_id, {
           invoices: [update],
         });
         return jsonResult({ updated: res.body.invoices?.[0] ?? null });
@@ -385,7 +385,7 @@ Only fields you pass are changed; unsupplied fields remain untouched on the Xero
         const baseWhere = 'Type=="ACCPAY"';
         const where = params.where ? `${baseWhere} AND (${params.where})` : baseWhere;
         const res = await client.accountingApi.getInvoices(
-          TENANT_ID,
+          tenantId(),
           params.modified_since ? new Date(params.modified_since) : undefined,
           where,
           params.order,
@@ -434,7 +434,7 @@ Status defaults to DRAFT. Use 'AUTHORISED' to approve for payment. Typically exp
       try {
         const client = await getXeroClient();
         const payload = buildInvoicePayload("ACCPAY", params);
-        const res = await client.accountingApi.createInvoices(TENANT_ID, {
+        const res = await client.accountingApi.createInvoices(tenantId(), {
           invoices: [payload],
         });
         return jsonResult({ created: res.body.invoices?.[0] ?? null });

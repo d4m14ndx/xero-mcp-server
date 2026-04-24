@@ -1,6 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { getXeroClient, TENANT_ID } from "../client.js";
+import { getXeroClient, tenantId } from "../client.js";
 import {
   ResponseFormatSchema,
   ResponseFormat,
@@ -61,7 +61,7 @@ Filter by type='BANK' to get bank accounts (their account_id is what you pass to
           .filter(Boolean)
           .join(" AND ");
         const res = await client.accountingApi.getAccounts(
-          TENANT_ID,
+          tenantId(),
           undefined,
           finalWhere || undefined,
           order,
@@ -117,7 +117,7 @@ Filter by type='BANK' to get bank accounts (their account_id is what you pass to
     async ({ where, order, response_format }) => {
       try {
         const client = await getXeroClient();
-        const res = await client.accountingApi.getTaxRates(TENANT_ID, where, order);
+        const res = await client.accountingApi.getTaxRates(tenantId(), where, order);
         const rates = res.body.taxRates ?? [];
         const data = {
           count: rates.length,
@@ -165,7 +165,7 @@ Filter by type='BANK' to get bank accounts (their account_id is what you pass to
     async ({ response_format }) => {
       try {
         const client = await getXeroClient();
-        const res = await client.accountingApi.getOrganisations(TENANT_ID);
+        const res = await client.accountingApi.getOrganisations(tenantId());
         const org = res.body.organisations?.[0];
         if (!org) {
           return {

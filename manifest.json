@@ -2,9 +2,9 @@
   "dxt_version": "0.1",
   "name": "xero-mcp-server",
   "display_name": "Xero",
-  "version": "0.2.0",
-  "description": "Create invoices, bills, payments, and bank transactions in Xero. Attach PDFs to bills. Flag bill lines as billable expenses and re-invoice them to clients.",
-  "long_description": "An MCP server that drives the Xero accounting API using a Xero Custom Connection. Exposes tools for creating and managing sales invoices (ACCREC) and supplier bills (ACCPAY), recording payments, spend/receive-money bank transactions, contacts, accounts, and tax rates. v0.2 adds: attaching files (PDFs/images) to bills and invoices, and a billable-expense workflow — flag lines on supplier bills as billable to a client and later generate a sales invoice for the client from all their pending billable expenses (local JSON store, since Xero's native 'Assign to customer' isn't in the public API).",
+  "version": "0.3.0",
+  "description": "Drive Xero from Claude: invoices, bills, payments, bank transactions, PDF attachments, billable expenses. Auth via Xero Custom Connection (paid) or standard OAuth 2.0 (free).",
+  "long_description": "An MCP server that drives the Xero accounting API. v0.3 adds dual authentication: Xero Custom Connection (paid dev plan, single-tenant, no browser) OR standard OAuth 2.0 (free plan, browser consent once, refresh-token persisted). Other features: sales invoices (ACCREC), supplier bills (ACCPAY), payments, spend/receive-money bank transactions, contacts, chart of accounts, tax rates, PDF/image attachments on invoices/bills, and a billable-expense workflow (flag bill lines as billable to a client, later generate a sales invoice from all their pending billable expenses).",
   "author": {
     "name": "Damian Guppy"
   },
@@ -16,7 +16,9 @@
       "args": ["${__dirname}/dist/index.js"],
       "env": {
         "XERO_CLIENT_ID": "${user_config.xero_client_id}",
-        "XERO_CLIENT_SECRET": "${user_config.xero_client_secret}"
+        "XERO_CLIENT_SECRET": "${user_config.xero_client_secret}",
+        "XERO_AUTH_MODE": "${user_config.xero_auth_mode}",
+        "XERO_TENANT_ID": "${user_config.xero_tenant_id}"
       }
     }
   },
@@ -45,19 +47,34 @@
     { "name": "xero_unflag_billable_expense", "description": "Delete or revert a billable expense record" }
   ],
   "user_config": {
+    "xero_auth_mode": {
+      "type": "string",
+      "title": "Auth mode",
+      "description": "'custom_connection' (default, paid Xero dev plan, no browser) or 'oauth' (free plan, browser consent once). Leave blank for custom_connection.",
+      "required": false,
+      "default": "custom_connection",
+      "sensitive": false
+    },
     "xero_client_id": {
       "type": "string",
       "title": "Xero Client ID",
-      "description": "Client ID from your Xero Custom Connection (developer.xero.com/app/manage)",
+      "description": "Client ID from your Xero app (developer.xero.com/app/manage) — either a Custom Connection or a standard OAuth 2.0 web app.",
       "required": true,
       "sensitive": false
     },
     "xero_client_secret": {
       "type": "string",
       "title": "Xero Client Secret",
-      "description": "Client secret from your Xero Custom Connection — shown once when generated",
+      "description": "Client secret from the same Xero app — shown once when generated.",
       "required": true,
       "sensitive": true
+    },
+    "xero_tenant_id": {
+      "type": "string",
+      "title": "Xero Tenant ID (OAuth only)",
+      "description": "Optional. In OAuth mode with multiple orgs, set this to a specific tenant UUID. Leave blank to use the first tenant granted during consent.",
+      "required": false,
+      "sensitive": false
     }
   },
   "compatibility": {

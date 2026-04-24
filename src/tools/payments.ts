@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { Payment } from "xero-node";
-import { getXeroClient, TENANT_ID } from "../client.js";
+import { getXeroClient, tenantId } from "../client.js";
 import {
   compact,
   formatError,
@@ -64,7 +64,7 @@ Required: invoice_id, account_id (the bank/cash account the money moved through)
           reference,
           isReconciled: is_reconciled,
         }) as Payment;
-        const res = await client.accountingApi.createPayments(TENANT_ID, {
+        const res = await client.accountingApi.createPayments(tenantId(), {
           payments: [payment],
         });
         return jsonResult({ created: res.body.payments?.[0] ?? null });
@@ -98,7 +98,7 @@ Required: invoice_id, account_id (the bank/cash account the money moved through)
       try {
         const client = await getXeroClient();
         const res = await client.accountingApi.getPayments(
-          TENANT_ID,
+          tenantId(),
           modified_since ? new Date(modified_since) : undefined,
           where,
           order,

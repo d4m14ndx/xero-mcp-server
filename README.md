@@ -7,7 +7,10 @@
 
 **Drive your Xero accounting from Claude.** An MCP (Model Context Protocol) server exposing 22 Xero tools — create invoices and bills, record payments, attach PDFs, reconcile bank transactions, flag billable client expenses and roll them up into invoices later.
 
-Built on the official [`xero-node`](https://github.com/XeroAPI/xero-node) SDK with a **Xero Custom Connection** (OAuth2 client-credentials) — single-tenant, no browser redirect, fast token refresh.
+Built on the official [`xero-node`](https://github.com/XeroAPI/xero-node) SDK with two auth modes:
+
+- **Xero Custom Connection** (`client_credentials`) — single-tenant, no browser. Paid Xero Developer plan required.
+- **Standard OAuth 2.0** — browser consent once, refresh-token persisted. Free.
 
 ---
 
@@ -16,7 +19,7 @@ Built on the official [`xero-node`](https://github.com/XeroAPI/xero-node) SDK wi
 - [Why](#why)
 - [Tool reference](#tool-reference)
 - [Quickstart](#quickstart)
-  - [1. Create a Xero Custom Connection](#1-create-a-xero-custom-connection)
+  - [1. Create a Xero app](#1-create-a-xero-app)
   - [2. Install](#2-install)
   - [3. Wire into your MCP client](#3-wire-into-your-mcp-client)
 - [Usage examples](#usage-examples)
@@ -96,20 +99,36 @@ Local JSON-backed workflow for re-billing supplier costs to clients. Xero's "Ass
 
 ## Quickstart
 
-### 1. Create a Xero Custom Connection
+### 1. Create a Xero app
 
-A Custom Connection is Xero's machine-to-machine auth: one organisation, no browser redirect, 30-minute tokens. Requires a paid Xero Developer plan (~USD $10/mo per connection).
+Pick one:
+
+#### Option A — Custom Connection (paid, simpler)
+
+Xero's machine-to-machine auth: one organisation, no browser redirect, 30-minute tokens. Requires a paid Xero Developer plan (~USD $10/mo per connection).
 
 1. Go to https://developer.xero.com/app/manage/ as a Xero org **admin**.
 2. Click **New app** → **Custom connection**.
 3. Name it (e.g. "Claude MCP"), select the Xero org.
-4. Add these scopes:
-   - `accounting.transactions` — invoices, bills, payments, bank transactions
-   - `accounting.contacts` — contacts
-   - `accounting.settings.read` — chart of accounts, tax rates, org info
-   - `accounting.attachments` — file attachments
+4. Add these scopes: `accounting.transactions`, `accounting.contacts`, `accounting.settings.read`, `accounting.attachments`.
 5. Save. **Copy the Client ID and Client Secret immediately** — the secret is only shown once.
 6. Approve the connection from the email Xero sends to the admin.
+
+At runtime, set `XERO_AUTH_MODE=custom_connection` (or leave unset — it's the default) along with `XERO_CLIENT_ID` and `XERO_CLIENT_SECRET`.
+
+#### Option B — Standard OAuth 2.0 (free, browser consent once)
+
+A normal Xero OAuth app — free to register, supports multiple orgs, survives 60-day refresh-token inactivity windows.
+
+1. Go to https://developer.xero.com/app/manage/ and click **New app** → **Web app**.
+2. Give it a name and a company URL.
+3. Set **Redirect URI** to `http://localhost:5555/callback` (or another localhost URL; set `XERO_OAUTH_REDIRECT_URI` to match if you use something else).
+4. Add the same scopes as above, **plus `offline_access`** (required for refresh tokens).
+5. Copy the Client ID and Client Secret.
+
+At runtime, set `XERO_AUTH_MODE=oauth` along with `XERO_CLIENT_ID` / `XERO_CLIENT_SECRET`. The server will open your browser on first tool call (or run `npm run auth` to pre-seed the tokens). Tokens persist to `~/.xero-mcp/oauth-tokens.json`.
+
+If the consenting user has access to multiple Xero orgs, the first one granted is used — override with `XERO_TENANT_ID=<uuid>`.
 
 ### 2. Install
 
@@ -268,14 +287,31 @@ If a generated sales invoice gets voided in Xero, call `xero_unflag_billable_exp
 
 ## Token handling & scopes
 
-- **Tokens** last 30 minutes; server mints on first call and refreshes ~60 s before expiry. Held in memory only.
-- **Scopes** are set at the Custom Connection level in the Xero developer portal, not per-request. The tools here need:
-  - `accounting.transactions`
-  - `accounting.contacts`
-  - `accounting.settings.read`
-  - `accounting.attachments`
+### Custom Connection mode
+- Access tokens last 30 minutes; server mints on first call, refreshes ~60 s before expiry. Held in memory only.
+- Scopes are set at the Custom Connection level in the Xero developer portal.
 
-Override the default scopes with `XERO_SCOPES="space separated list"` env var if needed.
+### OAuth mode
+- Access tokens last 30 minutes; refresh tokens rotate on each refresh and survive 60 days of inactivity.
+- Tokens persist to `~/.xero-mcp/oauth-tokens.json` (chmod 600). Delete that file to force a fresh consent.
+- First tool call after install opens your browser automatically. Alternatively, run `npm run auth` from the CLI.
+
+### Required scopes (both modes)
+- `accounting.transactions`
+- `accounting.contacts`
+- `accounting.settings.read`
+- `accounting.attachments`
+- `offline_access` (OAuth mode only, required for refresh tokens)
+
+Override the default scope list with `XERO_SCOPES="space separated list"` env var if needed.
+
+### Auth mode selection
+| Env | Value | Effect |
+|---|---|---|
+| `XERO_AUTH_MODE` | `custom_connection` (default) | client_credentials flow, no browser |
+| `XERO_AUTH_MODE` | `oauth` | authorization code flow, browser consent, persisted refresh token |
+| `XERO_OAUTH_REDIRECT_URI` | e.g. `http://localhost:5555/callback` | Override the default callback URL (OAuth mode) |
+| `XERO_TENANT_ID` | Xero tenant UUID | OAuth only: pick a specific org when the consent grants access to multiple |
 
 ---
 

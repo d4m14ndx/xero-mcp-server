@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import * as fs from "fs";
 import * as path from "path";
-import { getXeroClient, TENANT_ID } from "../client.js";
+import { getXeroClient, tenantId } from "../client.js";
 import { formatError, jsonResult } from "../common.js";
 
 const MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024; // 25 MB Xero limit
@@ -91,7 +91,7 @@ File is read from the local filesystem at file_path. Max size 25 MB. Common type
         const resolvedName = file_name ?? path.basename(absPath);
         const client = await getXeroClient();
         const res = await client.accountingApi.createInvoiceAttachmentByFileName(
-          TENANT_ID,
+          tenantId(),
           invoice_id,
           resolvedName,
           buffer,
@@ -136,7 +136,7 @@ File is read from the local filesystem at file_path. Max size 25 MB. Common type
       try {
         const client = await getXeroClient();
         const res = await client.accountingApi.getInvoiceAttachments(
-          TENANT_ID,
+          tenantId(),
           invoice_id,
         );
         return jsonResult({

@@ -11,7 +11,7 @@ import { registerBillableTools } from "./tools/billable.js";
 
 const server = new McpServer({
   name: "xero-mcp-server",
-  version: "0.2.0",
+  version: "0.3.0",
 });
 
 registerInvoiceTools(server);

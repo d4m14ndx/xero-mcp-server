@@ -4,7 +4,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
 import { Invoice } from "xero-node";
-import { getXeroClient, TENANT_ID } from "../client.js";
+import { getXeroClient, tenantId } from "../client.js";
 import {
   compact,
   formatError,
@@ -168,7 +168,7 @@ If bill_line_item_id is omitted, the expense is associated with the bill general
         try {
           const client = await getXeroClient();
           const billRes = await client.accountingApi.getInvoice(
-            TENANT_ID,
+            tenantId(),
             params.bill_invoice_id,
           );
           bill_number = billRes.body.invoices?.[0]?.invoiceNumber ?? null;
@@ -178,7 +178,7 @@ If bill_line_item_id is omitted, the expense is associated with the bill general
         try {
           const client = await getXeroClient();
           const contactRes = await client.accountingApi.getContact(
-            TENANT_ID,
+            tenantId(),
             params.client_contact_id,
           );
           client_name = contactRes.body.contacts?.[0]?.name ?? null;
@@ -382,7 +382,7 @@ By default the invoice is created as DRAFT for review. Pass status='AUTHORISED' 
           status: params.status as unknown as Invoice.StatusEnum,
         }) as Invoice;
 
-        const res = await client.accountingApi.createInvoices(TENANT_ID, {
+        const res = await client.accountingApi.createInvoices(tenantId(), {
           invoices: [invoicePayload],
         });
         const created = res.body.invoices?.[0];

@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { Contact } from "xero-node";
-import { getXeroClient, TENANT_ID } from "../client.js";
+import { getXeroClient, tenantId } from "../client.js";
 import {
   PaginationSchema,
   ResponseFormatSchema,
@@ -62,7 +62,7 @@ export function registerContactTools(server: McpServer) {
       try {
         const client = await getXeroClient();
         const res = await client.accountingApi.getContacts(
-          TENANT_ID,
+          tenantId(),
           undefined,
           where,
           undefined,
@@ -148,7 +148,7 @@ export function registerContactTools(server: McpServer) {
               ]
             : undefined,
         }) as Contact;
-        const res = await client.accountingApi.createContacts(TENANT_ID, {
+        const res = await client.accountingApi.createContacts(tenantId(), {
           contacts: [contact],
         });
         return jsonResult({ created: res.body.contacts?.[0] ?? null });

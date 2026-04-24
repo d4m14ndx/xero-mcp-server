@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { BankTransaction } from "xero-node";
-import { getXeroClient, TENANT_ID } from "../client.js";
+import { getXeroClient, tenantId } from "../client.js";
 import {
   LineItemSchema,
   PaginationSchema,
@@ -43,7 +43,7 @@ Use this to see what's been reconciled or created against a bank account. Filter
       try {
         const client = await getXeroClient();
         const res = await client.accountingApi.getBankTransactions(
-          TENANT_ID,
+          tenantId(),
           modified_since ? new Date(modified_since) : undefined,
           where,
           order,
@@ -144,7 +144,7 @@ To then reconcile this against a real bank-feed statement line, use the Xero web
           lineAmountTypes:
             params.line_amount_type as unknown as BankTransaction["lineAmountTypes"],
         }) as BankTransaction;
-        const res = await client.accountingApi.createBankTransactions(TENANT_ID, {
+        const res = await client.accountingApi.createBankTransactions(tenantId(), {
           bankTransactions: [txn],
         });
         return jsonResult({ created: res.body.bankTransactions?.[0] ?? null });
@@ -179,7 +179,7 @@ Note: Xero's full bank-reconciliation UI (matching statement-line to transaction
       try {
         const client = await getXeroClient();
         const res = await client.accountingApi.updateBankTransaction(
-          TENANT_ID,
+          tenantId(),
           bank_transaction_id,
           {
             bankTransactions: [
